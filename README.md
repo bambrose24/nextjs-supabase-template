@@ -1,29 +1,47 @@
-# Create T3 App
+# Next.js + tRPC + Prisma + Supabase = Profit!
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+This is a project template that sets you up with all of the basics required to build an interesting full stack app. It combines these frameworks into a setup that should empower you to build with sensible defaults.
 
-## What's next? How do I make an app with this?
+It is based on the [T3 Stack](https://create.t3.gg/), bootstrapped with `create-t3-app`, and then hand-tuned by [Bob Ambrose](https://github.com/bambrose24).
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+Things that this template comes with
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- Next.js App Router
+- Postgres database
+- Auth
+- Type-safe API
+- UI library in ShadCN/UI
+
+This is everything you need to start building an advanced app.
+
+## Quick Start
+
+If you're familiar with these systems, here's your guide to getting going. The short of it is that you need an account with Supabase, and the rest will take care of itself. See `.env.example` to know what to add; you'll add this to your `.env` file. See the [Supabase Docs](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs) for what specifically to do
+
+Once you do this, you can start the development server with `npm run dev` and visit `localhost:3000` to get started.
+
+## Overview
+
+I can't possibly explain the systems better than they explain themselves, but if you're new to any of this tech, I'll do my best to explain the overall picture. But first, some links to each of the projects involved here.
 
 - [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
+- [Supabase](https://supabase.com/docs)
 - [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- [tRPC](https://trpc.io) with [TanStack Query](https://tanstack.com/query/latest)
+- [Tailwind CSS](https://tailwindcss.com) with [ShadCN UI](https://ui.shadcn.com/)
 
-## Learn More
+Generally speaking, here's how things click together:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- Next.js at its core. This is the web server framework that will return a React app.
+- tRPC as the server API. It provides type safety end-to-end at its core. We use this as the main way to talk to the database to make sure we get authorized queries.
+  - Note: this template does not take full advantage of Supabase's RLS (row-level security) as an auth strategy. It instead creates
+- Supabase as the auth, database, and storage provider.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+This template doesn't enforce an opinion on data fetching strategies, but you do have basically two options
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- Use the TanStack query hooks from the `trpc` component to fetch data in the React Lifecycle. This is the pre- React Server Components way to fetch data.
+- Use the `trpc` client to fetch data in React Server Components. You can take full advantage of Suspense and have the first response from the server return interesting HTML.
 
-## How do I deploy this?
+There is lengthy debate on what the right approach will be for each use case. I encourage you to think critically about what one is best for you. If you're not sure, try starting with the TanStack query option and try pre-fetching queries in the server component for the page.
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+You can see examples in `prefetch/page.tsx`, `server-only-fetch/page.tsx`, and `client-only-fetch/page.tsx`. It's also worth noting that you can pre-fetch data in the initial SSR render of client components too, but I digress.

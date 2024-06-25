@@ -6,11 +6,12 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
+import { supabaseServer } from "~/util/supabase/server";
 
 /**
  * 1. CONTEXT
@@ -25,8 +26,16 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const supabase = supabaseServer();
+  const {
+    data: { user: supabaseUser },
+  } = await supabase.auth.getUser();
+
+  // NOTE: you can query a `user` table here if you want to based on the supabase email
+
   return {
     db,
+    supabaseUser,
     ...opts,
   };
 };
@@ -73,6 +82,37 @@ export const createCallerFactory = t.createCallerFactory;
  */
 export const createTRPCRouter = t.router;
 
+const LOG_PREFIX = `[trpc]`;
+
+/**
+ * Global procedure with top-level logging middleware.
+ */
+const procedure = t.procedure.use(async ({ path, type, next }) => {
+  const start = Date.now();
+  const typeAndPath = { trpcPath: path, trpcType: type };
+
+  // NOTE: you can add a different logger here if you want, like Winston.
+  console.info(`${LOG_PREFIX} starting trpc request handling`, {
+    ...typeAndPath,
+  });
+  const result = await next();
+  const durationMs = Date.now() - start;
+
+  console.info(`${LOG_PREFIX} tRPC request ended`, {
+    ...typeAndPath,
+    trpcRequestDurationMs: durationMs,
+    ok: result.ok,
+    ...(result.ok === false
+      ? {
+          trpcError: result.error.message,
+          trpcErrorCode: result.error.code,
+          ...(result.error.stack ? { trpcErrorStack: result.error.stack } : {}),
+        }
+      : {}),
+  });
+  return result;
+});
+
 /**
  * Public (unauthenticated) procedure
  *
@@ -80,4 +120,18 @@ export const createTRPCRouter = t.router;
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure;
+export const publicProcedure = procedure;
+
+/**
+ * A procedure that enforces that a Supabase user is present.
+ */
+export const authroizedProcedure = procedure.use(async ({ ctx, next }) => {
+  if (!ctx.supabaseUser) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to do that.",
+    });
+  }
+  const result = await next();
+  return result;
+});
