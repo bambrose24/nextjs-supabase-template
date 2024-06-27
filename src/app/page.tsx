@@ -1,7 +1,7 @@
-import { api } from "~/trpc/server";
+import { serverApi } from "~/trpc/server";
 
 export default async function Home() {
-  const { greeting } = await api.example.hello({
+  const { greeting } = await serverApi.example.hello({
     text: "Next.js + Supabase = 🎉",
   });
 

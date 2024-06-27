@@ -2,7 +2,7 @@
 
 import { clientApi } from "~/trpc/react";
 
-export function ClientOnlyFetchPage() {
+export default function ClientOnlyFetchPage() {
   const { data, isPending } = clientApi.example.hello2.useQuery();
 
   return (
