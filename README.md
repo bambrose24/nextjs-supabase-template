@@ -8,7 +8,7 @@ Things that this template comes with
 
 - Next.js App Router
 - Postgres database
-- Auth
+- Auth (via Supabase)
 - Type-safe API
 - UI library in ShadCN/UI
 
@@ -35,7 +35,7 @@ Generally speaking, here's how things click together:
 - Next.js at its core. This is the web server framework that will return a React app.
 - tRPC as the server API. It provides type safety end-to-end at its core. We use this as the main way to talk to the database to make sure we get authorized queries.
   - Note: this template does not take full advantage of Supabase's RLS (row-level security) as an auth strategy. It instead creates
-- Supabase as the auth, database, and storage provider.
+- Supabase as the auth, database, and storage provider. Supabase auth was implemented via their most recent guide with Next.js [here](https://supabase.com/docs/guides/auth/server-side/nextjs?queryGroups=router&router=app).
 
 This template doesn't enforce an opinion on data fetching strategies, but you do have basically two options
 
